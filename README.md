@@ -1,13 +1,19 @@
-# GOIT Team Project - Node.js Server
+# GOIT Team Project - Node.js Task Manager Backend
 
-This project is an Express server configured with support for **CORS**, **dotenv**, and **Nodemon** for development mode.
+This is the backend for the Task Manager application built with **Node.js**, **Express.js**, and **MongoDB**. It includes full support for authentication, board/column/card management, and theme customization using static image assets.
+
+---
 
 ## 🚀 Features
 
-- **Express.js** – fast framework for Node.js
-- **CORS** – allows cross-origin requests
-- **dotenv** – manages environment variables
-- **Nodemon** – automatically restarts the server in development
+- **JWT Authentication** (Login / Register)
+- **Boards** with title, icon, background image
+- **Columns** per board
+- **Cards** per column with priorities, deadlines
+- **Static assets serving** (backgrounds & icons)
+- **Validation** using Joi
+- **MongoDB with Mongoose**
+- **CORS**, **dotenv**, **Passport**, **Modular routing**
 
 ---
 
@@ -15,29 +21,39 @@ This project is an Express server configured with support for **CORS**, **dotenv
 
 1. **Clone the project:**
 
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+```
+
 2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Create a `.env` file and add:**
-   ```env
-   PORT=5000
-   ```
+
+```bash
+npm install
+```
+
+3. **Create a `.env.local` file:**
+
+```env
+PORT=5000
+DB_HOST=<your_mongodb_connection_string>
+TOKEN_SECRET=<your_jwt_secret>
+```
 
 ---
 
 ## ▶️ Start Server
 
-### 🔹 **In production:**
-
-```bash
-npm start
-```
-
 ### 🔹 **In development (with Nodemon):**
 
 ```bash
 npm run dev
+```
+
+### 🔹 **In production:**
+
+```bash
+npm start
 ```
 
 The server will start at: `http://localhost:5000`
@@ -47,36 +63,106 @@ The server will start at: `http://localhost:5000`
 ## 📂 Project Structure
 
 ```bash
-GOIT-TEAM-PROJECT-NODEJS-SERVER/
-├── node_modules/
+GOIT-TASK-MANAGER-BACKEND/
 ├── public/
+│   ├── images/
+│   └── icons/
 ├── src/
 │   ├── db/
+│   │   └── connectToDb.js
 │   ├── lib/
+│   │   ├── assets/
+│   │   │   └── backgrounds.js
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   └── schema/
 │   ├── middlewares/
 │   ├── routes/
 │   ├── app.js
-│   ├── cors.js
+│   └── cors.js
 ├── server.js
 ├── .env.local
-├── .gitignore
 ├── package.json
-├── package-lock.json
-├── README.md
+└── README.md
 ```
 
 ---
 
-## 📌 Available Routes
+## 📌 API Routes
 
-### ✅ `GET /`
+### ✅ `GET /` — Server Check
 
-- **Description:** Main endpoint, checks if the server is running.
+- **Response:** `{ message: "The Express server is running perfectly!" }`
+
+---
+
+## 🔐 Auth Routes ( `/auth` )
+
+### `POST /auth/register`
+
+- **Body:**
+
+```json
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "testpassword123"
+}
+```
+
+---
+
+### `POST /auth/login`
+
+- **Body:**
+
+```json
+{
+  "email": "testuser@example.com",
+  "password": "testpassword123"
+}
+```
+
 - **Response:**
 
 ```json
 {
-  "message": "🚀 The Express server is running perfectly!!"
+  "token": "<JWT_TOKEN>",
+  "user": {
+    "_id": "...",
+    "name": "Test User",
+    "email": "testuser@example.com",
+    "avatarURL": null
+  }
+}
+```
+
+---
+
+### `PATCH /auth/profile`
+
+🔐 Requires Bearer Token in `Authorization` header.
+
+- **Body:** (any or all fields)
+
+```json
+{
+  "name": "New Name",
+  "avatarURL": "http://localhost:5000/avatars/photo.png",
+  "password": "newSecurePass123"
+}
+```
+
+- **Response:**
+
+```json
+{
+  "user": {
+    "_id": "...",
+    "name": "New Name",
+    "email": "testuser@example.com",
+    "avatarURL": "http://localhost:5000/avatars/photo.png"
+  }
 }
 ```
 
@@ -84,4 +170,105 @@ GOIT-TEAM-PROJECT-NODEJS-SERVER/
 
 ---
 
-Developed with ❤️ using Node.js, Express.
+## 🧱 Board Routes ( `/boards` )
+
+🔐 Requires Bearer Token in `Authorization` header.
+
+### `GET /boards`
+
+- **Description:** Get all boards for the logged-in user
+
+### `POST /boards`
+
+- **Body:** `{ title, background (optional), icon (optional) }`
+- **Response:** Created board
+
+### `PATCH /boards/:id`
+
+- **Body:** Fields to update: `title`, `background`, `icon`
+
+### `DELETE /boards/:id`
+
+- **Description:** Deletes a board owned by the user
+
+---
+
+## 📦 Column Routes ( `/columns` )
+
+🔐 Requires Bearer Token
+
+### `GET /columns/:boardId` — Columns for a board
+
+### `POST /columns` — Create column (`{ title, boardId }`)
+
+### `DELETE /columns/:id` — Delete column
+
+---
+
+## 🗂️ Card Routes ( `/cards` )
+
+🔐 Requires Bearer Token
+
+### `GET /cards/:columnId` — Cards for a column
+
+### `POST /cards` — Create card
+
+```json
+{
+  "title": "Task name",
+  "description": "Details...",
+  "columnId": "...",
+  "priority": "low | medium | high",
+  "deadline": "2024-12-31"
+}
+```
+
+### `PATCH /cards/:id` — Update card
+
+### `DELETE /cards/:id` — Delete card
+
+---
+
+## 🎨 Assets Routes ( `/assets` )
+
+### `GET /assets/backgrounds`
+
+- **Description:** Returns full URLs to background images stored in `public/images`
+- **Response:**
+
+```json
+[
+  "http://localhost:5000/images/blue-sea.jpg",
+  "http://localhost:5000/images/star-sky.jpg",
+  ...
+]
+```
+
+Use this list on frontend to display background options when creating/editing a board.
+
+---
+
+## 📥 Static Files Access
+
+- Backgrounds: `http://localhost:5000/images/<filename>`
+- Icons (if any): `http://localhost:5000/icons/<filename>`
+
+---
+
+## ✅ Auth Middleware
+
+Protected routes use `validateAuth` to check JWT token:
+
+```ts
+Authorization: Bearer<token>;
+```
+
+---
+
+## 🧪 Validation Middleware
+
+Every route using `validateBody(schema)` ensures incoming data is validated with Joi before continuing.
+
+---
+
+Developed with ❤️ using Node.js, Express, MongoDB.
