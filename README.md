@@ -296,4 +296,5 @@ Each route validates data using Joi and `validateBody()` middleware.
 
 ---
 
+The backend gives you the foundation, you bring the app to life. Let’s build something cool! 💻🚀
 Developed with ❤️ using Node.js, Express, MongoDB.
