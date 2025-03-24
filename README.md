@@ -72,9 +72,9 @@ The server will start at: `http://localhost:5000`
 ```bash
 GOIT-TASK-MANAGER-BACKEND/
 ├── public/
-│   ├── images/
-│   ├── icons/
-│   └── avatars/
+│   ├── images/       
+│   ├── icons/         
+│   └── avatars/      
 ├── src/
 │   ├── db/
 │   ├── lib/
@@ -109,7 +109,6 @@ GOIT-TASK-MANAGER-BACKEND/
 Register a new user.
 
 - **Request body:**
-
 ```json
 {
   "name": "Test User",
@@ -125,7 +124,6 @@ Register a new user.
 Login user and receive JWT tokens.
 
 - **Request body:**
-
 ```json
 {
   "email": "test@example.com",
@@ -134,7 +132,6 @@ Login user and receive JWT tokens.
 ```
 
 - **Response:**
-
 ```json
 {
   "accessToken": "<JWT_ACCESS_TOKEN>",
@@ -149,7 +146,6 @@ Login user and receive JWT tokens.
 ```
 
 Use `accessToken` in future requests:
-
 ```http
 Authorization: Bearer <accessToken>
 ```
@@ -161,7 +157,6 @@ Authorization: Bearer <accessToken>
 Generate a new access token using a valid refresh token.
 
 - **Request body:**
-
 ```json
 {
   "refreshToken": "<your_refresh_token>"
@@ -169,7 +164,6 @@ Generate a new access token using a valid refresh token.
 ```
 
 - **Response:**
-
 ```json
 {
   "accessToken": "<new_access_token>"
@@ -177,7 +171,6 @@ Generate a new access token using a valid refresh token.
 ```
 
 - **Frontend Example:**
-
 ```js
 const res = await fetch("http://localhost:5000/auth/refresh-token", {
   method: "POST",
@@ -202,7 +195,6 @@ http://localhost:3000/dashboard?token=<access_token>
 ```
 
 - **Frontend example (Vite/React):**
-
 ```js
 const params = new URLSearchParams(window.location.search);
 const token = params.get("token");
@@ -216,7 +208,6 @@ if (token) localStorage.setItem("token", token);
 Update user profile (requires token).
 
 - **Request body:**
-
 ```json
 {
   "name": "New Name",
@@ -232,11 +223,9 @@ Update user profile (requires token).
 Upload user avatar image (PNG/JPG).
 
 - **Request body:** `form-data`
-
   - `avatar`: File input
 
 - **Frontend example:**
-
 ```js
 const formData = new FormData();
 formData.append("avatar", file);
@@ -295,7 +284,6 @@ await fetch("http://localhost:5000/auth/avatar", {
 ## ✅ Auth Middleware
 
 Protect routes with:
-
 ```http
 Authorization: Bearer <access_token>
 ```
@@ -308,4 +296,7 @@ Each route validates data using Joi and `validateBody()` middleware.
 
 ---
 
+The backend gives you the foundation, you bring the app to life. Let’s build something cool! 💻🚀
+
 Developed with ❤️ using Node.js, Express, MongoDB.
+

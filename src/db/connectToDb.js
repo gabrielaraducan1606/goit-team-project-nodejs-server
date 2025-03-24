@@ -13,6 +13,7 @@ if (!DB_HOST) {
 const connectToDb = async () => {
   try {
     await mongoose.connect(DB_HOST);
+    console.log(" MongoDB connected successfully");
   } catch (error) {
     console.error(" MongoDB connection failed:", error.message);
     process.exit(1);

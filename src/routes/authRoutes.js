@@ -1,7 +1,4 @@
 import express from "express";
-
-import passport from "passport";
-
 import authController from "../lib/controllers/authController.js";
 import schemas from "../lib/schema/userSchemas.js";
 import { validateBody } from "../middlewares/validateBody.js";
@@ -68,53 +65,26 @@ router.post("/login", validateBody(schemas.loginSchema), async (req, res) => {
     }
   }
 });
-
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { session: false }),
-  async (req, res) => {
-    const jwt = await authController.generateGoogleToken(req.user);
-
-    const redirectUrl = `http://localhost:3000/dashboard?token=${jwt}`;
-    res.redirect(redirectUrl);
-  }
-);
-router.post("/refresh-token", async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(400).json({
-      status: "error",
-      code: 400,
-      message: "Refresh token is required",
-    });
-  }
-
+router.patch("/profile", validateAuth, async (req, res) => {
   try {
-    const newAccessToken = await authController.refreshAccessToken(
-      refreshToken
+    const updatedUser = await authController.updateProfile(
+      req.user._id,
+      req.body
     );
     res.status(200).json({
       status: "success",
       code: 200,
       data: {
-        accessToken: newAccessToken,
+        user: updatedUser,
       },
     });
   } catch (error) {
-    res.status(401).json({
+    res.status(500).json({
       status: "error",
-      code: 401,
+      code: 500,
       message: error.message,
     });
   }
 });
-
-
 
 export default router;
