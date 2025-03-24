@@ -7,14 +7,20 @@ import User from "../models/user.js";
 dotenv.config();
 
 const secretForToken = process.env.TOKEN_SECRET;
+
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || "REFRESH_SECRET";
+
+
+
 const authController = {
   login,
   validateJWT,
   signup,
   getPayloadFromJWT,
+
   generateGoogleToken,
   refreshAccessToken,
+
 };
 
 // REGISTER function
@@ -48,6 +54,7 @@ export async function signup(data) {
 export async function login(data) {
   const { email, password } = data;
   const user = await User.findOne({ email });
+
   if (!user) throw new Error("Email or password is incorrect");
 
   const isMatching = await bcrypt.compare(password, user.password);
@@ -92,6 +99,7 @@ export async function refreshAccessToken(refreshToken) {
   } catch (error) {
     throw new Error("Refresh token expired or invalid");
   }
+
 }
 
 // VALIDATION JWT  function
@@ -114,6 +122,18 @@ export async function getPayloadFromJWT(token) {
     return null;
   }
 }
+export async function updateProfile(userId, updates) {
+  const allowedFields = ["name", "avatarURL", "password"];
+  const updateData = {};
+
+  for (const field of allowedFields) {
+    if (updates[field]) {
+      updateData[field] =
+        field === "password"
+          ? await bcrypt.hash(updates[field], 10)
+          : updates[field];
+    }
+  }
 
 export async function generateGoogleToken(user) {
   const token = jwt.sign({ id: user._id, email: user.email }, secretForToken, {
@@ -124,5 +144,7 @@ export async function generateGoogleToken(user) {
 
   return token;
 }
+  
+ 
 
 export default authController;

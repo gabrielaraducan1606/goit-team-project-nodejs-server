@@ -6,11 +6,13 @@ This is the backend for the Task Manager application built with **Node.js**, **E
 
 ## 🚀 Features
 
+
 - **JWT Authentication** (Login / Register , Refresh Token Support)
 - **Boards** with title, icon, background image
 - **Columns** per board
 - **Cards** per column with priorities, deadlines
 - **Upload and update user avatar**
+
 - **Static assets serving** (backgrounds & icons)
 - **Validation** using Joi
 - **MongoDB with Mongoose**
@@ -143,7 +145,11 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ### `PATCH /auth/profile`
 
+
+
+
 🔐 Requires Bearer Token in `Authorization` header.
+
 
 - **Body:** (any or all fields)
 
@@ -384,5 +390,109 @@ Authorization: Bearer<token>;
 Every route using `validateBody(schema)` ensures incoming data is validated with Joi before continuing.
 
 ---
+
+
+
+## 🧱 Board Routes ( `/boards` )
+
+🔐 Requires Bearer Token in `Authorization` header.
+
+### `GET /boards`
+
+- **Description:** Get all boards for the logged-in user
+
+### `POST /boards`
+
+- **Body:** `{ title, background (optional), icon (optional) }`
+- **Response:** Created board
+
+### `PATCH /boards/:id`
+
+- **Body:** Fields to update: `title`, `background`, `icon`
+
+### `DELETE /boards/:id`
+
+- **Description:** Deletes a board owned by the user
+
+---
+
+## 📦 Column Routes ( `/columns` )
+
+🔐 Requires Bearer Token
+
+### `GET /columns/:boardId` — Columns for a board
+
+### `POST /columns` — Create column (`{ title, boardId }`)
+
+### `DELETE /columns/:id` — Delete column
+
+---
+
+## 🗂️ Card Routes ( `/cards` )
+
+🔐 Requires Bearer Token
+
+### `GET /cards/:columnId` — Cards for a column
+
+### `POST /cards` — Create card
+
+```json
+{
+  "title": "Task name",
+  "description": "Details...",
+  "columnId": "...",
+  "priority": "low | medium | high",
+  "deadline": "2024-12-31"
+}
+```
+
+### `PATCH /cards/:id` — Update card
+
+### `DELETE /cards/:id` — Delete card
+
+---
+
+## 🎨 Assets Routes ( `/assets` )
+
+### `GET /assets/backgrounds`
+
+- **Description:** Returns full URLs to background images stored in `public/images`
+- **Response:**
+
+```json
+[
+  "http://localhost:5000/images/blue-sea.jpg",
+  "http://localhost:5000/images/star-sky.jpg",
+  ...
+]
+```
+
+Use this list on frontend to display background options when creating/editing a board.
+
+---
+
+## 📥 Static Files Access
+
+- Backgrounds: `http://localhost:5000/images/<filename>`
+- Icons (if any): `http://localhost:5000/icons/<filename>`
+
+---
+
+## ✅ Auth Middleware
+
+Protected routes use `validateAuth` to check JWT token:
+
+```ts
+Authorization: Bearer<token>;
+```
+
+---
+
+## 🧪 Validation Middleware
+
+Every route using `validateBody(schema)` ensures incoming data is validated with Joi before continuing.
+
+---
+
 
 Developed with ❤️ using Node.js, Express, MongoDB.

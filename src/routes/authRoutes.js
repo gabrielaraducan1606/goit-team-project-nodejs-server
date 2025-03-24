@@ -1,5 +1,7 @@
 import express from "express";
+
 import passport from "passport";
+
 import authController from "../lib/controllers/authController.js";
 import schemas from "../lib/schema/userSchemas.js";
 import { validateBody } from "../middlewares/validateBody.js";
@@ -66,6 +68,7 @@ router.post("/login", validateBody(schemas.loginSchema), async (req, res) => {
     }
   }
 });
+
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -111,5 +114,7 @@ router.post("/refresh-token", async (req, res) => {
     });
   }
 });
+
+
 
 export default router;
