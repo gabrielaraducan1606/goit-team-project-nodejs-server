@@ -1,19 +1,19 @@
 # GOIT Team Project - Node.js Task Manager Backend
 
-This is the backend for the Task Manager application built with **Node.js**, **Express.js**, and **MongoDB**. It includes full support for authentication, board/column/card management, and theme customization using static image assets.
+This is the backend for the Task Manager application built with **Node.js**, **Express.js**, and **MongoDB**. It includes full support for user authentication (JWT + Google OAuth2 + Refresh Tokens), board/column/card management, theme customization, and avatar upload.
 
 ---
 
 ## 🚀 Features
 
-
-- **JWT Authentication** (Login / Register , Refresh Token Support)
+- **JWT Authentication** (Login / Register)
+- **Google OAuth2 Login**
+- **Access & Refresh Token Support**
 - **Boards** with title, icon, background image
 - **Columns** per board
 - **Cards** per column with priorities, deadlines
-- **Upload and update user avatar**
-
-- **Static assets serving** (backgrounds & icons)
+- **Upload and update user avatar** (local storage)
+- **Static assets serving** (backgrounds, icons, avatars)
 - **Validation** using Joi
 - **MongoDB with Mongoose**
 - **CORS**, **dotenv**, **Passport**, **Modular routing**
@@ -41,19 +41,23 @@ npm install
 PORT=5000
 DB_HOST=<your_mongodb_connection_string>
 TOKEN_SECRET=<your_jwt_secret>
+REFRESH_TOKEN_SECRET=<your_refresh_token_secret>
+GOOGLE_CLIENT_ID=<your_google_client_id>
+GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
 ```
 
 ---
 
 ## ▶️ Start Server
 
-### 🔹 **In development (with Nodemon):**
+### 🔹 In development (with Nodemon):
 
 ```bash
 npm run dev
 ```
 
-### 🔹 **In production:**
+### 🔹 In production:
 
 ```bash
 npm start
@@ -73,10 +77,8 @@ GOIT-TASK-MANAGER-BACKEND/
 │   └── avatars/
 ├── src/
 │   ├── db/
-│   │   └── connectToDb.js
 │   ├── lib/
 │   │   ├── assets/
-│   │   │   └── backgrounds.js
 │   │   ├── controllers/
 │   │   ├── models/
 │   │   └── schema/
@@ -104,12 +106,14 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ### `POST /auth/register`
 
-- **Body:**
+Register a new user.
+
+- **Request body:**
 
 ```json
 {
   "name": "Test User",
-  "email": "testuser@example.com",
+  "email": "test@example.com",
   "password": "testpassword123"
 }
 ```
@@ -118,11 +122,13 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ### `POST /auth/login`
 
-- **Body:**
+Login user and receive JWT tokens.
+
+- **Request body:**
 
 ```json
 {
-  "email": "testuser@example.com",
+  "email": "test@example.com",
   "password": "testpassword123"
 }
 ```
@@ -131,97 +137,30 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ```json
 {
-  "token": "<JWT_TOKEN>",
+  "accessToken": "<JWT_ACCESS_TOKEN>",
+  "refreshToken": "<JWT_REFRESH_TOKEN>",
   "user": {
     "_id": "...",
     "name": "Test User",
-    "email": "testuser@example.com",
+    "email": "test@example.com",
     "avatarURL": null
   }
 }
 ```
 
----
+Use `accessToken` in future requests:
 
-### `PATCH /auth/profile`
-
-
-
-
-🔐 Requires Bearer Token in `Authorization` header.
-
-
-- **Body:** (any or all fields)
-
-```json
-{
-  "name": "New Name",
-  "avatarURL": "http://localhost:5000/avatars/photo.png",
-  "password": "newSecurePass123"
-}
-```
-
-- **Response:**
-
-```json
-{
-  "user": {
-    "_id": "...",
-    "name": "New Name",
-    "email": "testuser@example.com",
-    "avatarURL": "http://localhost:5000/avatars/photo.png"
-  }
-}
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ---
-
-### `POST /auth/avatar`
-
-🔐 Requires Bearer Token in `Authorization` header.
-
-- **Body (form-data):**
-
-  - `avatar`: (type: File) — user uploads a PNG/JPG file
-
-- **Response:**
-
-```json
-{
-  "status": "success",
-  "code": 200,
-  "data": {
-    "user": {
-      "_id": "...",
-      "name": "Test User",
-      "email": "test@example.com",
-      "avatarURL": "/avatars/<filename>.jpg"
-    }
-  }
-}
-```
-
-- **Frontend integration (example):**
-
-```js
-const formData = new FormData();
-formData.append("avatar", file);
-
-fetch("http://localhost:5000/auth/avatar", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-  body: formData,
-});
-```
-
-## 🔁 Refresh Token Support
 
 ### `POST /auth/refresh-token`
 
-- **Description:** Generate a new access token using a valid refresh token.
-- **Body:**
+Generate a new access token using a valid refresh token.
+
+- **Request body:**
 
 ```json
 {
@@ -250,124 +189,102 @@ const data = await res.json();
 
 ---
 
-## 🔐 Google OAuth2 Login
-
 ### `GET /auth/google`
 
-- Starts the Google login flow (opens browser popup or redirect).
+Start Google login.
 
 ### `GET /auth/google/callback`
 
-- Google redirects here after user login.
-- On success, the user is redirected to:
+Google login callback. Redirects user to frontend:
 
-```
+```url
 http://localhost:3000/dashboard?token=<access_token>
 ```
 
-- **Frontend (Vite/React) Example:**
+- **Frontend example (Vite/React):**
 
 ```js
 const params = new URLSearchParams(window.location.search);
 const token = params.get("token");
+if (token) localStorage.setItem("token", token);
+```
 
-if (token) {
-  localStorage.setItem("token", token);
+---
+
+### `PATCH /auth/profile`
+
+Update user profile (requires token).
+
+- **Request body:**
+
+```json
+{
+  "name": "New Name",
+  "avatarURL": "http://localhost:5000/avatars/photo.png",
+  "password": "newPassword123"
 }
 ```
 
 ---
 
-### 🔧 Make sure your `.env.local` contains:
+### `POST /auth/avatar`
 
-````env
-TOKEN_SECRET=your_secret
-REFRESH_TOKEN_SECRET=your_refresh_secret
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
+Upload user avatar image (PNG/JPG).
+
+- **Request body:** `form-data`
+
+  - `avatar`: File input
+
+- **Frontend example:**
+
+```js
+const formData = new FormData();
+formData.append("avatar", file);
+
+await fetch("http://localhost:5000/auth/avatar", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${token}` },
+  body: formData,
+});
+```
 
 ---
 
 ## 🧱 Board Routes ( `/boards` )
 
-🔐 Requires Bearer Token in `Authorization` header.
+🔐 Requires `Authorization: Bearer <token>`
 
-### `GET /boards`
-
-- **Description:** Get all boards for the logged-in user
-
-### `POST /boards`
-
-- **Body:** `{ title, background (optional), icon (optional) }`
-- **Response:** Created board
-
-### `PATCH /boards/:id`
-
-- **Body:** Fields to update: `title`, `background`, `icon`
-
-### `DELETE /boards/:id`
-
-- **Description:** Deletes a board owned by the user
+- `GET /boards`
+- `POST /boards`
+- `PATCH /boards/:id`
+- `DELETE /boards/:id`
 
 ---
 
 ## 📦 Column Routes ( `/columns` )
 
-🔐 Requires Bearer Token
-
-### `GET /columns/:boardId` — Columns for a board
-
-### `POST /columns` — Create column (`{ title, boardId }`)
-
-### `DELETE /columns/:id` — Delete column
+- `GET /columns/:boardId`
+- `POST /columns`
+- `DELETE /columns/:id`
 
 ---
 
-## 📂 Card Routes ( `/cards` )
+## 🗂️ Card Routes ( `/cards` )
 
-🔐 Requires Bearer Token
-
-### `GET /cards/:columnId` — Cards for a column
-
-### `POST /cards` — Create card
-
-```json
-{
-  "title": "Task name",
-  "description": "Details...",
-  "columnId": "...",
-  "priority": "low | medium | high",
-  "deadline": "2024-12-31"
-}
-````
-
-### `PATCH /cards/:id` — Update card
-
-### `DELETE /cards/:id` — Delete card
+- `GET /cards/:columnId`
+- `POST /cards`
+- `PATCH /cards/:id`
+- `DELETE /cards/:id`
 
 ---
 
 ## 🎨 Assets Routes ( `/assets` )
 
-### `GET /assets/backgrounds`
-
-- **Description:** Returns full URLs to background images stored in `public/images`
-- **Response:**
-
-```json
-[
-  "http://localhost:5000/images/blue-sea.jpg",
-  "http://localhost:5000/images/star-sky.jpg",
-  ...
-]
-```
-
-Use this list on frontend to display background options when creating/editing a board.
+- `GET /assets/backgrounds` — Returns URLs for backgrounds.
 
 ---
 
-## 📅 Static Files Access
+## 📥 Static File Access
 
 - Backgrounds: `http://localhost:5000/images/<filename>`
 - Icons: `http://localhost:5000/icons/<filename>`
@@ -377,122 +294,18 @@ Use this list on frontend to display background options when creating/editing a 
 
 ## ✅ Auth Middleware
 
-Protected routes use `validateAuth` to check JWT token:
+Protect routes with:
 
-```ts
-Authorization: Bearer<token>;
+```http
+Authorization: Bearer <access_token>
 ```
 
 ---
 
 ## 🧪 Validation Middleware
 
-Every route using `validateBody(schema)` ensures incoming data is validated with Joi before continuing.
+Each route validates data using Joi and `validateBody()` middleware.
 
 ---
-
-
-
-## 🧱 Board Routes ( `/boards` )
-
-🔐 Requires Bearer Token in `Authorization` header.
-
-### `GET /boards`
-
-- **Description:** Get all boards for the logged-in user
-
-### `POST /boards`
-
-- **Body:** `{ title, background (optional), icon (optional) }`
-- **Response:** Created board
-
-### `PATCH /boards/:id`
-
-- **Body:** Fields to update: `title`, `background`, `icon`
-
-### `DELETE /boards/:id`
-
-- **Description:** Deletes a board owned by the user
-
----
-
-## 📦 Column Routes ( `/columns` )
-
-🔐 Requires Bearer Token
-
-### `GET /columns/:boardId` — Columns for a board
-
-### `POST /columns` — Create column (`{ title, boardId }`)
-
-### `DELETE /columns/:id` — Delete column
-
----
-
-## 🗂️ Card Routes ( `/cards` )
-
-🔐 Requires Bearer Token
-
-### `GET /cards/:columnId` — Cards for a column
-
-### `POST /cards` — Create card
-
-```json
-{
-  "title": "Task name",
-  "description": "Details...",
-  "columnId": "...",
-  "priority": "low | medium | high",
-  "deadline": "2024-12-31"
-}
-```
-
-### `PATCH /cards/:id` — Update card
-
-### `DELETE /cards/:id` — Delete card
-
----
-
-## 🎨 Assets Routes ( `/assets` )
-
-### `GET /assets/backgrounds`
-
-- **Description:** Returns full URLs to background images stored in `public/images`
-- **Response:**
-
-```json
-[
-  "http://localhost:5000/images/blue-sea.jpg",
-  "http://localhost:5000/images/star-sky.jpg",
-  ...
-]
-```
-
-Use this list on frontend to display background options when creating/editing a board.
-
----
-
-## 📥 Static Files Access
-
-- Backgrounds: `http://localhost:5000/images/<filename>`
-- Icons (if any): `http://localhost:5000/icons/<filename>`
-
----
-
-## ✅ Auth Middleware
-
-Protected routes use `validateAuth` to check JWT token:
-
-```ts
-Authorization: Bearer<token>;
-```
-
----
-
-## 🧪 Validation Middleware
-
-Every route using `validateBody(schema)` ensures incoming data is validated with Joi before continuing.
-
----
-
 
 Developed with ❤️ using Node.js, Express, MongoDB.

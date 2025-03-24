@@ -10,17 +10,13 @@ const secretForToken = process.env.TOKEN_SECRET;
 
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || "REFRESH_SECRET";
 
-
-
 const authController = {
   login,
   validateJWT,
   signup,
   getPayloadFromJWT,
-
   generateGoogleToken,
   refreshAccessToken,
-
 };
 
 // REGISTER function
@@ -99,7 +95,6 @@ export async function refreshAccessToken(refreshToken) {
   } catch (error) {
     throw new Error("Refresh token expired or invalid");
   }
-
 }
 
 // VALIDATION JWT  function
@@ -122,20 +117,8 @@ export async function getPayloadFromJWT(token) {
     return null;
   }
 }
-export async function updateProfile(userId, updates) {
-  const allowedFields = ["name", "avatarURL", "password"];
-  const updateData = {};
 
-  for (const field of allowedFields) {
-    if (updates[field]) {
-      updateData[field] =
-        field === "password"
-          ? await bcrypt.hash(updates[field], 10)
-          : updates[field];
-    }
-  }
-
-export async function generateGoogleToken(user) {
+async function generateGoogleToken(user) {
   const token = jwt.sign({ id: user._id, email: user.email }, secretForToken, {
     expiresIn: "1h",
   });
@@ -144,7 +127,5 @@ export async function generateGoogleToken(user) {
 
   return token;
 }
-  
- 
 
 export default authController;
