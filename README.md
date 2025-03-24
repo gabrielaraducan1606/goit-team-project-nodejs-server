@@ -168,6 +168,117 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ---
 
+### `POST /auth/avatar`
+
+🔐 Requires Bearer Token in `Authorization` header.
+
+- **Body (form-data):**
+
+  - `avatar`: (type: File) — user uploads a PNG/JPG file
+
+- **Response:**
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "user": {
+      "_id": "...",
+      "name": "Test User",
+      "email": "test@example.com",
+      "avatarURL": "/avatars/<filename>.jpg"
+    }
+  }
+}
+```
+
+- **Frontend integration (example):**
+
+```js
+const formData = new FormData();
+formData.append("avatar", file);
+
+fetch("http://localhost:5000/auth/avatar", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+});
+```
+
+## 🔁 Refresh Token Support
+
+### `POST /auth/refresh-token`
+
+- **Description:** Generate a new access token using a valid refresh token.
+- **Body:**
+
+```json
+{
+  "refreshToken": "<your_refresh_token>"
+}
+```
+
+- **Response:**
+
+```json
+{
+  "accessToken": "<new_access_token>"
+}
+```
+
+- **Frontend Example:**
+
+```js
+const res = await fetch("http://localhost:5000/auth/refresh-token", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ refreshToken }),
+});
+const data = await res.json();
+```
+
+---
+
+## 🔐 Google OAuth2 Login
+
+### `GET /auth/google`
+
+- Starts the Google login flow (opens browser popup or redirect).
+
+### `GET /auth/google/callback`
+
+- Google redirects here after user login.
+- On success, the user is redirected to:
+
+```
+http://localhost:3000/dashboard?token=<access_token>
+```
+
+- **Frontend (Vite/React) Example:**
+
+```js
+const params = new URLSearchParams(window.location.search);
+const token = params.get("token");
+
+if (token) {
+  localStorage.setItem("token", token);
+}
+```
+
+---
+
+### 🔧 Make sure your `.env.local` contains:
+
+````env
+TOKEN_SECRET=your_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
+
 ---
 
 ## 🧱 Board Routes ( `/boards` )
