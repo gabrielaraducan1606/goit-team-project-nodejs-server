@@ -281,6 +281,8 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
 
 ---
 
+
+
 ## 🧱 Board Routes ( `/boards` )
 
 🔐 Requires Bearer Token in `Authorization` header.
