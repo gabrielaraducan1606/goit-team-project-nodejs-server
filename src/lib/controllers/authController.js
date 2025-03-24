@@ -8,12 +8,19 @@ dotenv.config();
 
 const secretForToken = process.env.TOKEN_SECRET;
 
+const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || "REFRESH_SECRET";
+
+
+
 const authController = {
   login,
   validateJWT,
   signup,
   getPayloadFromJWT,
-  updateProfile,
+
+  generateGoogleToken,
+  refreshAccessToken,
+
 };
 
 // REGISTER function
@@ -48,23 +55,24 @@ export async function login(data) {
   const { email, password } = data;
   const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new Error("Email or password is incorrect");
-  }
+  if (!user) throw new Error("Email or password is incorrect");
 
   const isMatching = await bcrypt.compare(password, user.password);
-  if (!isMatching) {
-    throw new Error("Email or password is incorrect");
-  }
+  if (!isMatching) throw new Error("Email or password is incorrect");
 
-  const token = jwt.sign({ id: user._id, email: user.email }, secretForToken, {
+  const accessToken = jwt.sign({ id: user._id }, secretForToken, {
     expiresIn: "1h",
   });
 
-  await User.findByIdAndUpdate(user._id, { token });
+  const refreshToken = jwt.sign({ id: user._id }, refreshTokenSecret, {
+    expiresIn: "7d",
+  });
+
+  await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
 
   return {
-    token,
+    accessToken,
+    refreshToken,
     user: {
       _id: user._id,
       name: user.name,
@@ -72,6 +80,26 @@ export async function login(data) {
       avatarURL: user.avatarURL || null,
     },
   };
+}
+
+export async function refreshAccessToken(refreshToken) {
+  try {
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+    const user = await User.findById(decoded.id);
+
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new Error("Invalid refresh token");
+    }
+
+    const newAccessToken = jwt.sign({ id: user._id }, secretForToken, {
+      expiresIn: "1h",
+    });
+
+    return newAccessToken;
+  } catch (error) {
+    throw new Error("Refresh token expired or invalid");
+  }
+
 }
 
 // VALIDATION JWT  function
@@ -107,11 +135,16 @@ export async function updateProfile(userId, updates) {
     }
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-    new: true,
-  }).select("-password");
+export async function generateGoogleToken(user) {
+  const token = jwt.sign({ id: user._id, email: user.email }, secretForToken, {
+    expiresIn: "1h",
+  });
 
-  return updatedUser;
+  await User.findByIdAndUpdate(user._id, { token });
+
+  return token;
 }
+  
+ 
 
 export default authController;

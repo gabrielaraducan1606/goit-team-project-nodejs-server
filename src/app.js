@@ -11,6 +11,7 @@ import boardRoutes from "./routes/boardRoutes.js";
 import columnRoutes from "./routes/columnRoutes.js";
 import cardRoutes from "./routes/cardRoutes.js";
 import assetsRoutes from "./routes/assetsRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 connectToDb();
 
@@ -24,7 +25,7 @@ app.use(passport.initialize());
 
 app.use("/images", express.static("public/images"));
 app.use("/icons", express.static("public/icons"));
-
+app.use("/auth", profileRoutes);
 app.use("/auth", authRoutes);
 app.use("/boards", boardRoutes);
 app.use("/columns", columnRoutes);
