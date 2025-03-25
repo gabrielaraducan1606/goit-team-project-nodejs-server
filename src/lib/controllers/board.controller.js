@@ -4,10 +4,14 @@ export const getBoards = async (req, res) => {
   const boards = await Board.find({ owner: req.user.id });
   res.json(boards);
 };
-
 export const createBoard = async (req, res) => {
-  const { title, background } = req.body;
-  const board = await Board.create({ title, background, owner: req.user.id });
+  const { title, background, icon } = req.body;
+  const board = await Board.create({
+    title,
+    background,
+    icon,
+    owner: req.user.id,
+  });
   res.status(201).json(board);
 };
 

@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
-// import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -19,9 +18,8 @@ const authController = {
   refreshAccessToken,
 };
 
-// REGISTER function
 export async function signup(data) {
-  const { email, password, name } = data; // Adaugă name
+  const { email, password, name } = data;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -36,17 +34,16 @@ export async function signup(data) {
       password: hashedPassword,
       theme: "violet",
       token: null,
-      name: name, // Adaugă name
+      name: name,
     });
 
     return newUser;
   } catch (error) {
-    console.error("Signup error:", error); // Adaugă log
+    console.error("Signup error:", error);
     throw error;
   }
 }
 
-// LOGIN function
 export async function login(data) {
   const { email, password } = data;
   const user = await User.findOne({ email });
@@ -64,7 +61,10 @@ export async function login(data) {
     expiresIn: "7d",
   });
 
-  await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
+  await User.findByIdAndUpdate(user._id, {
+    token: accessToken,
+    refreshToken: refreshToken,
+  });
 
   return {
     accessToken,
@@ -97,7 +97,6 @@ export async function refreshAccessToken(refreshToken) {
   }
 }
 
-// VALIDATION JWT  function
 export function validateJWT(token) {
   try {
     const decoded = jwt.verify(token, secretForToken);
@@ -108,7 +107,6 @@ export function validateJWT(token) {
   }
 }
 
-// OBTAIN PAYLOAD-ULUI FROM JWT function
 export async function getPayloadFromJWT(token) {
   try {
     return jwt.verify(token, secretForToken);
@@ -119,13 +117,23 @@ export async function getPayloadFromJWT(token) {
 }
 
 async function generateGoogleToken(user) {
-  const token = jwt.sign({ id: user._id, email: user.email }, secretForToken, {
+  const accessToken = jwt.sign({ id: user._id }, secretForToken, {
     expiresIn: "1h",
   });
 
-  await User.findByIdAndUpdate(user._id, { token });
+  const refreshToken = jwt.sign({ id: user._id }, refreshTokenSecret, {
+    expiresIn: "7d",
+  });
 
-  return token;
+  await User.findByIdAndUpdate(user._id, {
+    accessToken,
+    refreshToken,
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 }
 
 export default authController;
