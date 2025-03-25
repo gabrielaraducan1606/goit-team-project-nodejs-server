@@ -11,7 +11,7 @@ This is the backend for the Task Manager application built with **Node.js**, **E
 - **Access & Refresh Token Support**
 - **Boards** with title, icon, background image
 - **Columns** per board
-- **Cards** per column with priorities, deadlines
+- **Cards** per column with priorities, deadlines, and migration support
 - **Upload and update user avatar** (local storage)
 - **Static assets serving** (backgrounds, icons, avatars)
 - **Validation** using Joi
@@ -72,9 +72,9 @@ The server will start at: `http://localhost:5000`
 ```bash
 GOIT-TASK-MANAGER-BACKEND/
 ├── public/
-│   ├── images/       
-│   ├── icons/         
-│   └── avatars/      
+│   ├── images/
+│   ├── icons/
+│   └── avatars/
 ├── src/
 │   ├── db/
 │   ├── lib/
@@ -106,9 +106,10 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ### `POST /auth/register`
 
-Register a new user.
+Registers a new user.
 
 - **Request body:**
+
 ```json
 {
   "name": "Test User",
@@ -121,9 +122,10 @@ Register a new user.
 
 ### `POST /auth/login`
 
-Login user and receive JWT tokens.
+Login and return access and refresh tokens.
 
 - **Request body:**
+
 ```json
 {
   "email": "test@example.com",
@@ -132,6 +134,7 @@ Login user and receive JWT tokens.
 ```
 
 - **Response:**
+
 ```json
 {
   "accessToken": "<JWT_ACCESS_TOKEN>",
@@ -145,18 +148,14 @@ Login user and receive JWT tokens.
 }
 ```
 
-Use `accessToken` in future requests:
-```http
-Authorization: Bearer <accessToken>
-```
-
 ---
 
 ### `POST /auth/refresh-token`
 
-Generate a new access token using a valid refresh token.
+Generates new access token using a valid refresh token.
 
 - **Request body:**
+
 ```json
 {
   "refreshToken": "<your_refresh_token>"
@@ -164,55 +163,36 @@ Generate a new access token using a valid refresh token.
 ```
 
 - **Response:**
+
 ```json
 {
   "accessToken": "<new_access_token>"
 }
 ```
 
-- **Frontend Example:**
-```js
-const res = await fetch("http://localhost:5000/auth/refresh-token", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ refreshToken }),
-});
-const data = await res.json();
-```
-
 ---
 
-### `GET /auth/google`
+### `GET /auth/google` & `GET /auth/google/callback`
 
-Start Google login.
+Used for Google OAuth2 login. On success, redirects to frontend with access token:
 
-### `GET /auth/google/callback`
-
-Google login callback. Redirects user to frontend:
-
-```url
-http://localhost:3000/dashboard?token=<access_token>
 ```
-
-- **Frontend example (Vite/React):**
-```js
-const params = new URLSearchParams(window.location.search);
-const token = params.get("token");
-if (token) localStorage.setItem("token", token);
+http://localhost:3000/dashboard?token=<access_token>
 ```
 
 ---
 
 ### `PATCH /auth/profile`
 
-Update user profile (requires token).
+Update user profile.
 
 - **Request body:**
+
 ```json
 {
-  "name": "New Name",
-  "avatarURL": "http://localhost:5000/avatars/photo.png",
-  "password": "newPassword123"
+  "name": "Updated Name",
+  "password": "newpass",
+  "avatarURL": "http://localhost:5000/avatars/image.jpg"
 }
 ```
 
@@ -220,56 +200,131 @@ Update user profile (requires token).
 
 ### `POST /auth/avatar`
 
-Upload user avatar image (PNG/JPG).
-
-- **Request body:** `form-data`
-  - `avatar`: File input
-
-- **Frontend example:**
-```js
-const formData = new FormData();
-formData.append("avatar", file);
-
-await fetch("http://localhost:5000/auth/avatar", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${token}` },
-  body: formData,
-});
-```
+Upload a user avatar via form-data (field: `avatar`).
 
 ---
 
 ## 🧱 Board Routes ( `/boards` )
 
-🔐 Requires `Authorization: Bearer <token>`
+### `GET /boards`
 
-- `GET /boards`
-- `POST /boards`
-- `PATCH /boards/:id`
-- `DELETE /boards/:id`
+Returns all boards created by the user.
+
+- **Response:**
+
+```json
+[
+  {
+    "_id": "...",
+    "title": "Design Board",
+    "background": "/images/sky.jpg",
+    "icon": "idea",
+    "owner": "user_id"
+  }
+]
+```
+
+### `POST /boards`
+
+Creates a new board.
+
+- **Request body:**
+
+```json
+{
+  "title": "Development",
+  "background": "/images/blue.jpg",
+  "icon": "code"
+}
+```
+
+### `PATCH /boards/:id`
+
+Updates board title, background, or icon.
+
+### `DELETE /boards/:id`
+
+Deletes the specified board.
 
 ---
 
 ## 📦 Column Routes ( `/columns` )
 
-- `GET /columns/:boardId`
-- `POST /columns`
-- `DELETE /columns/:id`
+### `GET /columns/:boardId`
+
+Returns all columns for a specific board.
+
+### `POST /columns`
+
+Create a column.
+
+- **Request body:**
+
+```json
+{
+  "title": "To Do",
+  "boardId": "..."
+}
+```
+
+### `DELETE /columns/:id`
+
+Deletes the column and its associated cards.
 
 ---
 
-## 🗂️ Card Routes ( `/cards` )
+## 📂 Card Routes ( `/cards` )
 
-- `GET /cards/:columnId`
-- `POST /cards`
-- `PATCH /cards/:id`
-- `DELETE /cards/:id`
+### `GET /cards/:columnId`
+
+Get all cards in a specific column.
+
+### `POST /cards`
+
+Create a new card.
+
+- **Request body:**
+
+```json
+{
+  "title": "Implement login",
+  "description": "Use JWT",
+  "priority": "high",
+  "deadline": "2024-12-01",
+  "columnId": "..."
+}
+```
+
+### `PATCH /cards/:id`
+
+Update a card — including changing its column (card migration).
+
+- **Request body:**
+
+```json
+{
+  "columnId": "<new_column_id>",
+  "priority": "medium"
+}
+```
+
+> ✅ Use this to **migrate a card** from one column (e.g. To Do) to another (e.g. In Progress).
+
+### `DELETE /cards/:id`
+
+Deletes the selected card.
 
 ---
 
 ## 🎨 Assets Routes ( `/assets` )
 
-- `GET /assets/backgrounds` — Returns URLs for backgrounds.
+### `GET /assets/backgrounds`
+
+Returns URLs to background images.
+
+### `GET /assets/icons`
+
+Returns available icon URLs.
 
 ---
 
@@ -283,20 +338,20 @@ await fetch("http://localhost:5000/auth/avatar", {
 
 ## ✅ Auth Middleware
 
-Protect routes with:
+Use access token in header:
+
 ```http
 Authorization: Bearer <access_token>
 ```
 
 ---
 
-## 🧪 Validation Middleware
+## 🪖 Validation Middleware
 
-Each route validates data using Joi and `validateBody()` middleware.
+Each request is validated using Joi schema via `validateBody()` middleware.
 
 ---
 
-The backend gives you the foundation, you bring the app to life. Let’s build something cool! 💻🚀
+> The backend gives you the foundation, you bring the app to life. Let’s build something cool! 💻✨
 
 Developed with ❤️ using Node.js, Express, MongoDB.
-
