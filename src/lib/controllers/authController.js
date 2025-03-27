@@ -20,38 +20,8 @@ const authController = {
   refreshAccessToken,
   updateToken,
   getUserByValidationToken,
+  logout,
 };
-
-// export async function signup(data) {
-//   const { email, password, name } = data;
-//   try {
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       throw new Error("Email already in use");
-//     }
-
-//     const saltRounds = 10;
-//     const hashedPassword = await bcrypt.hash(password, saltRounds);
-//     const token = uuidv4();
-
-//     const newUser = await User.create({
-//       email,
-//       password: hashedPassword,
-//       theme: "violet",
-//       token: null,
-//       name: name,
-//       verificationToken: token,
-//       verify: false,
-//     });
-
-//     sendWithSendGrid(email, token);
-
-//     return newUser;
-//   } catch (error) {
-//     console.error("Signup error:", error);
-//     throw error;
-//   }
-// }
 
 export async function signup(data) {
   const { email, password, name } = data;
@@ -85,7 +55,6 @@ export async function signup(data) {
     throw error;
   }
 }
-
 
 export async function login(data) {
   const { email, password } = data;
@@ -121,7 +90,6 @@ export async function login(data) {
   };
 }
 
-// UPDATE TOKEN FOR VALIDATION function
 export async function updateToken(email, token) {
     token = token || uuidv4();
     const updatedUser = await User.findOneAndUpdate(
@@ -135,15 +103,9 @@ export async function updateToken(email, token) {
     }
 }
 
-// USER TOKEN VALIDATION function
 export async function getUserByValidationToken(token) {
-  // Căutăm utilizatorul cu token-ul de verificare și verify: false
   return await User.findOne({ verificationToken: token, verify: false });
 }
-
-// export async function getUserByValidationToken(token) {
-//     return await User.findOne({ verificationToken: token, verify: false });
-// }
 
 export async function refreshAccessToken(refreshToken) {
   try {
@@ -201,6 +163,29 @@ async function generateGoogleToken(user) {
     accessToken,
     refreshToken,
   };
+}
+
+export async function logout(userId) {
+  try {
+    // Găsim utilizatorul după ID
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Setăm token-ul și refreshToken-ul la null
+    await User.findByIdAndUpdate(
+      userId,
+      { token: null, refreshToken: null },
+      { new: true }
+    );
+
+    console.log(`User with ID ${userId} logged out successfully`);
+
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
 }
 
 export default authController;
