@@ -35,18 +35,16 @@ export async function signup(data) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const token = uuidv4();
 
-    // Creăm utilizatorul cu statusul verify setat la false
     const newUser = await User.create({
       email,
       password: hashedPassword,
       theme: "violet",
-      token: null,  // Nu setăm token-ul până la verificarea email-ului
+      token: null,  
       name: name,
       verificationToken: token,
-      verify: false,  // statusul de verificare e setat la false
+      verify: false,  
     });
 
-    // Trimitem emailul de verificare
     sendWithSendGrid(email, token);
 
     return newUser;
@@ -167,13 +165,11 @@ async function generateGoogleToken(user) {
 
 export async function logout(userId) {
   try {
-    // Găsim utilizatorul după ID
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("User not found");
     }
 
-    // Setăm token-ul și refreshToken-ul la null
     await User.findByIdAndUpdate(
       userId,
       { token: null, refreshToken: null },

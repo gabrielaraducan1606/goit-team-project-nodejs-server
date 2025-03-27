@@ -12,10 +12,8 @@ router.post("/register",
   validateBody(schemas.registerSchema),
   async (req, res) => {
     try {
-      // Înregistrăm utilizatorul
       const newUser = await authController.signup(req.body);
 
-      // Răspuns de succes
       res.status(201).json({
         status: "success",
         code: 201,
@@ -25,7 +23,6 @@ router.post("/register",
         },
       });
     } catch (error) {
-      // Verificăm erorile și oferim un răspuns corespunzător
       if (error.message === "Email already in use") {
         res.status(409).json({
           status: "error",
@@ -110,7 +107,6 @@ router.get("/google/callback",
 
 router.get("/verify/:verificationToken", async (req, res) => {
   const token = req.params.verificationToken;
-  console.log("Received token:", token); // Debug log pentru a vedea dacă ruta ajunge aici.
 
   try {
     const user = await authController.getUserByValidationToken(token);
@@ -181,13 +177,10 @@ router.post("/verify", async (req, res) => {
   }
 });
 
-// Ruta pentru logout
 router.post("/logout", validateAuth, async (req, res) => {
   try {
-    // Obținem ID-ul utilizatorului din token-ul validat
-    const userId = req.user.id; // `req.user` este populat de `validateAuth`
+    const userId = req.user.id; 
 
-    // Apelează funcția pentru logout din controller
     await authController.logout(userId);
 
     return res.status(200).json({

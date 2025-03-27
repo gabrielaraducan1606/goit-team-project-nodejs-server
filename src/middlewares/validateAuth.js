@@ -1,6 +1,5 @@
 import passport from 'passport';
 
-// Middleware for AUTHENTICATION VALIDATION function
 export function validateAuth(req, res, next) {
     passport.authenticate("jwt", { session: false }, (err, user) => {
         if (err || !user) {
