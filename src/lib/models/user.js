@@ -22,6 +22,14 @@ const schema = new Schema(
     avatarURL: { type: String },
     accessToken: { type: String },
     refreshToken: { type: String },
+    verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, 'Verify token is required'],
+  },
   },
   { versionKey: false, timestamps: true }
 );
