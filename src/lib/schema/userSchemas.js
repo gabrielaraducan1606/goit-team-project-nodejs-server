@@ -8,6 +8,10 @@ const registerSchema = Joi.object({
   password: Joi.string().min(8).required(),
 });
 
+const emailSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 const loginSchema = Joi.object({
   email: Joi.string().pattern(emailRegExp).required(),
   password: Joi.string().min(8).required(),
@@ -18,6 +22,6 @@ const updateProfileSchema = Joi.object({
   password: Joi.string().min(8).optional(),
 });
 
-const schemas = { registerSchema, loginSchema, updateProfileSchema };
+const schemas = { registerSchema, emailSchema, loginSchema, updateProfileSchema };
 
 export default schemas;

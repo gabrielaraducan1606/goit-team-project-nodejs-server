@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
+import { v4 as uuidv4 } from 'uuid';
+import { sendWithSendGrid } from "../utils/sendEmail.js";
 
 dotenv.config();
 
@@ -16,6 +18,9 @@ const authController = {
   getPayloadFromJWT,
   generateGoogleToken,
   refreshAccessToken,
+  updateToken,
+  getUserByValidationToken,
+  logout,
 };
 
 export async function signup(data) {
@@ -28,14 +33,19 @@ export async function signup(data) {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const token = uuidv4();
 
     const newUser = await User.create({
       email,
       password: hashedPassword,
       theme: "violet",
-      token: null,
+      token: null,  
       name: name,
+      verificationToken: token,
+      verify: false,  
     });
+
+    sendWithSendGrid(email, token);
 
     return newUser;
   } catch (error) {
@@ -76,6 +86,23 @@ export async function login(data) {
       avatarURL: user.avatarURL || null,
     },
   };
+}
+
+export async function updateToken(email, token) {
+    token = token || uuidv4();
+    const updatedUser = await User.findOneAndUpdate(
+        { email },
+        { verificationToken: token },
+        { new: true } 
+    );
+
+    if (updatedUser) {
+        sendWithSendGrid(email, token);
+    }
+}
+
+export async function getUserByValidationToken(token) {
+  return await User.findOne({ verificationToken: token, verify: false });
 }
 
 export async function refreshAccessToken(refreshToken) {
@@ -134,6 +161,27 @@ async function generateGoogleToken(user) {
     accessToken,
     refreshToken,
   };
+}
+
+export async function logout(userId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      { token: null, refreshToken: null },
+      { new: true }
+    );
+
+    console.log(`User with ID ${userId} logged out successfully`);
+
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
 }
 
 export default authController;
