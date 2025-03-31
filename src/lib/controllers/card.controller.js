@@ -2,8 +2,22 @@ import Card from "../models/card.model.js";
 
 export const getCards = async (req, res) => {
   const { columnId } = req.params;
-  const cards = await Card.find({ columnId });
-  res.json(cards);
+  const { priority } = req.query;
+
+  const query = { columnId };
+
+  if (priority === "none") {
+    query.priority = { $exists: false };
+  } else if (["low", "medium", "high"].includes(priority)) {
+    query.priority = priority;
+  }
+
+  try {
+    const cards = await Card.find(query);
+    res.json(cards);
+  } catch (error) {
+    res.status(500).json({ message: "Server error: " + error.message });
+  }
 };
 
 export const createCard = async (req, res) => {

@@ -30,3 +30,23 @@ export const deleteColumn = async (req, res) => {
     res.status(500).json({ message: "Server error: " + error.message });
   }
 };
+export const updateColumn = async (req, res) => {
+  const { id } = req.params;
+  const { title, order } = req.body;
+
+  try {
+    const column = await Column.findById(id);
+    if (!column) {
+      return res.status(404).json({ message: "Column not found" });
+    }
+
+    if (title !== undefined) column.title = title;
+    if (order !== undefined) column.order = order;
+
+    await column.save();
+
+    res.json(column);
+  } catch (error) {
+    res.status(500).json({ message: "Server error: " + error.message });
+  }
+};
