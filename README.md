@@ -118,7 +118,60 @@ Registers a new user.
 }
 ```
 
+- **Response:**
+
+`````json
+{
+  "status": "success",
+  "code": 201,
+  "message": "Registration successful. Please check your email to verify your account.",
+  "data": {
+    "user": {
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "user_password_encryption",
+      "token": null,
+      "verify": false,
+      "verificationToken": "verificationToken",
+      "_id": "user id",
+      "createdAt": "time_stamp",
+      "updatedAt": "time_stamp"
+      }
+    }
+}
+
+```json
+
+- **Generates email verification:**
+
+Hello from TasksProApp!
+Click the link below to verify your account: <Verify_Email_ link_verification>
+Or copy and paste this URL into your browser:<URL_ verification>
+- **Email Verification Response:**
+````json
+{
+  "status": "success",
+  "code": 201,
+  "message": "Registration successful. Please check your email to verify your account.",
+  "data": {
+    "user": {
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "user_password_encryption",
+      "token": null,
+      "verify": true,
+      "verificationToken": null,
+      "_id": "user id",
+      "createdAt": "time_stamp",
+      "updatedAt": "time_stamp"
+      }
+    }
+}
+
+```json
+
 ---
+
 
 ### `POST /auth/login`
 
@@ -131,7 +184,7 @@ Login and return access and refresh tokens.
   "email": "test@example.com",
   "password": "testpassword123"
 }
-```
+`````
 
 - **Response:**
 
@@ -223,6 +276,51 @@ Returns all boards created by the user.
   }
 ]
 ```
+
+---
+
+### `POST /auth/logout`
+
+- **Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Help request sent successfully",
+  "data": {
+    "message": "Successfull help request sent by test@example.com"
+  }
+}
+```
+
+---
+
+---
+
+### `POST /auth/need-help`
+
+- **Request body:**
+
+```json
+{
+  "status": "success",
+  "message": "Logged out successfully"
+}
+```
+
+- **Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Help request sent successfully",
+  "data": {
+    "message": "Successfull help request sent by test@example.com"
+  }
+}
+```
+
+---
 
 ### `POST /boards`
 
