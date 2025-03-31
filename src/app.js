@@ -40,7 +40,13 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  res.status(500).json({ message: err.message });
+  console.error(err.stack);
+  res.status(500).json({
+    status: 'error',
+    code: 500,
+    message: err.message || 'Internal Server Error',
+  });
 });
+
 
 export default app;

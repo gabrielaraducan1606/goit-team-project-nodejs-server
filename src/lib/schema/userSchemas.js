@@ -22,6 +22,12 @@ const updateProfileSchema = Joi.object({
   password: Joi.string().min(8).optional(),
 });
 
-const schemas = { registerSchema, emailSchema, loginSchema, updateProfileSchema };
+const needHelpSchema = Joi.object({
+  email: Joi.string().email().required(),
+  comment: Joi.string().min(10).required(), 
+});
+
+
+const schemas = { registerSchema, emailSchema, loginSchema, updateProfileSchema, needHelpSchema };
 
 export default schemas;

@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
 import { v4 as uuidv4 } from 'uuid';
-import { sendWithSendGrid } from "../utils/sendEmail.js";
+import { sendNeedHelpEmail, sendVerificationEmail} from "../utils/sendEmail.js";
 
 dotenv.config();
 
 const secretForToken = process.env.TOKEN_SECRET;
-
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || "REFRESH_SECRET";
+
 
 const authController = {
   login,
@@ -21,6 +21,7 @@ const authController = {
   updateToken,
   getUserByValidationToken,
   logout,
+  needHelp,
 };
 
 export async function signup(data) {
@@ -45,7 +46,7 @@ export async function signup(data) {
       verify: false,  
     });
 
-    sendWithSendGrid(email, token);
+    sendVerificationEmail(email, token);
 
     return newUser;
   } catch (error) {
@@ -97,7 +98,7 @@ export async function updateToken(email, token) {
     );
 
     if (updatedUser) {
-        sendWithSendGrid(email, token);
+        sendVerificationEmail(email, token);
     }
 }
 
@@ -120,7 +121,7 @@ export async function refreshAccessToken(refreshToken) {
 
     return newAccessToken;
   } catch (error) {
-    throw new Error("Refresh token expired or invalid");
+    throw new Error("Refresh token expired or invalid. Please login again.");
   }
 }
 
@@ -163,6 +164,27 @@ async function generateGoogleToken(user) {
   };
 }
 
+
+export async function needHelp(userEmail, comment) {
+  try {
+    const subject = 'Need Help Request';
+    const text = `User Email: ${userEmail}\n\nComment: ${comment}`;
+    const html = `<p><strong>User Email:</strong> ${userEmail}</p><p><strong>Comment:</strong> ${comment}</p>`;
+
+    const response = await sendNeedHelpEmail('taskpro.project@gmail.com', userEmail, subject, text, html);
+
+    if (response && response.statusCode === 202) {
+      return { message: `Successfull help request sent by ${userEmail}` };
+    } else {
+  
+      throw new Error('Failed to send help request. Please try again later.');
+    }
+  } catch (error) {
+    console.error("Error sending help request:", error);
+    throw new Error(`Help request failed: ${error.message}`);
+  }
+}
+
 export async function logout(userId) {
   try {
     const user = await User.findById(userId);
@@ -183,5 +205,6 @@ export async function logout(userId) {
     throw error;
   }
 }
+
 
 export default authController;

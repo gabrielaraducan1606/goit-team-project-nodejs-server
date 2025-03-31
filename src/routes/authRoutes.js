@@ -6,6 +6,7 @@ import { validateBody } from "../middlewares/validateBody.js";
 import { validateAuth } from "../middlewares/validateAuth.js";
 import User from "../lib/models/user.js";
 
+
 const router = express.Router();
 
 router.post("/register",
@@ -124,7 +125,11 @@ router.get("/verify/:verificationToken", async (req, res) => {
     return res.status(200).json({ message: "Verification successful" });
   } catch (error) {
     console.error("Verification error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({
+      status: "error",
+      code: 500,
+      message: "Internal server error",
+    });
   }
 });
 
@@ -177,6 +182,25 @@ router.post("/verify", async (req, res) => {
   }
 });
 
+router.post("/need-help", validateBody(schemas.needHelpSchema), async (req, res) => {
+  const { email, comment } = req.body;
+
+  try {
+    const result = await authController.needHelp(email, comment);
+    res.status(200).json({
+      status: "success",
+      message: "Help request sent successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error in need-help route:", error); 
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Internal server error",
+    });
+  }
+});
+
 router.post("/logout", validateAuth, async (req, res) => {
   try {
     const userId = req.user.id; 
@@ -195,5 +219,6 @@ router.post("/logout", validateAuth, async (req, res) => {
     });
   }
 });
+
 
 export default router;
