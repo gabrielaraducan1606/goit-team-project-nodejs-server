@@ -113,7 +113,11 @@ router.get("/verify/:verificationToken", async (req, res) => {
     const user = await authController.getUserByValidationToken(token);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found or token expired" });
+    }
+
+    if (user.verify) {
+      return res.status(400).json({ message: "User is already verified" });
     }
 
     await User.findOneAndUpdate(

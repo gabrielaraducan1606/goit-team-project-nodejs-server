@@ -61,6 +61,10 @@ export async function login(data) {
 
   if (!user) throw new Error("Email or password is incorrect");
 
+  if (!user.verify) {
+    throw new Error("Email not verified");
+  }
+
   const isMatching = await bcrypt.compare(password, user.password);
   if (!isMatching) throw new Error("Email or password is incorrect");
 
