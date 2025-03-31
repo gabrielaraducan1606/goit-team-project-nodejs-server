@@ -3,6 +3,7 @@ import logger from "morgan";
 import cors from "./cors.js";
 import passport from "passport";
 import connectToDb from "./db/connectToDb.js";
+import { swaggerUi, swaggerSpec } from "../swaggerConfig.js"; // <- adăugat
 
 import "./config/passport.js";
 import profileRoutes from "./routes/profileRoutes.js";
@@ -24,6 +25,10 @@ app.use(passport.initialize());
 
 app.use("/images", express.static("public/images"));
 app.use("/icons", express.static("public/icons"));
+
+// 🔽 Ruta pentru Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use("/auth", profileRoutes);
 app.use("/auth", authRoutes);
 app.use("/boards", boardRoutes);
@@ -42,11 +47,10 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    status: 'error',
+    status: "error",
     code: 500,
-    message: err.message || 'Internal Server Error',
+    message: err.message || "Internal Server Error",
   });
 });
-
 
 export default app;
