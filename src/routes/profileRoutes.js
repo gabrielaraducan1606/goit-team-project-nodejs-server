@@ -28,7 +28,11 @@ router.patch("/profile", validateAuth, async (req, res) => {
       data: { user },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({
+      status: "error",
+      code: 500,
+      message: "Internal server error",
+    });
   }
 });
 
