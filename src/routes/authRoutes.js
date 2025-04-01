@@ -6,10 +6,10 @@ import { validateBody } from "../middlewares/validateBody.js";
 import { validateAuth } from "../middlewares/validateAuth.js";
 import User from "../lib/models/user.js";
 
-
 const router = express.Router();
 
-router.post("/register",
+router.post(
+  "/register",
   validateBody(schemas.registerSchema),
   async (req, res) => {
     try {
@@ -18,7 +18,8 @@ router.post("/register",
       res.status(201).json({
         status: "success",
         code: 201,
-        message: "Registration successful. Please check your email to verify your account.",
+        message:
+          "Registration successful. Please check your email to verify your account.",
         data: {
           user: newUser,
         },
@@ -39,17 +40,15 @@ router.post("/register",
       }
     }
   }
-); 
+);
 
 router.post("/login", validateBody(schemas.loginSchema), async (req, res) => {
   try {
-    const token = await authController.login(req.body);
+    const data = await authController.login(req.body);
     res.status(200).json({
       status: "success",
       code: 200,
-      data: {
-        token,
-      },
+      data,
     });
   } catch (error) {
     if (error.message === "Email or password is incorrect") {
@@ -93,11 +92,13 @@ router.post("/refresh-token", async (req, res) => {
   }
 });
 
-router.get("/google",
+router.get(
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-router.get("/google/callback",
+router.get(
+  "/google/callback",
   passport.authenticate("google", { session: false }),
   async (req, res) => {
     const jwt = await authController.generateGoogleToken(req.user);
@@ -113,7 +114,9 @@ router.get("/verify/:verificationToken", async (req, res) => {
     const user = await authController.getUserByValidationToken(token);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found or token expired" });
+      return res
+        .status(404)
+        .json({ message: "User not found or token expired" });
     }
 
     if (user.verify) {
@@ -186,28 +189,32 @@ router.post("/verify", async (req, res) => {
   }
 });
 
-router.post("/need-help", validateBody(schemas.needHelpSchema), async (req, res) => {
-  const { email, comment } = req.body;
+router.post(
+  "/need-help",
+  validateBody(schemas.needHelpSchema),
+  async (req, res) => {
+    const { email, comment } = req.body;
 
-  try {
-    const result = await authController.needHelp(email, comment);
-    res.status(200).json({
-      status: "success",
-      message: "Help request sent successfully",
-      data: result,
-    });
-  } catch (error) {
-    console.error("Error in need-help route:", error); 
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Internal server error",
-    });
+    try {
+      const result = await authController.needHelp(email, comment);
+      res.status(200).json({
+        status: "success",
+        message: "Help request sent successfully",
+        data: result,
+      });
+    } catch (error) {
+      console.error("Error in need-help route:", error);
+      res.status(500).json({
+        status: "error",
+        message: error.message || "Internal server error",
+      });
+    }
   }
-});
+);
 
 router.post("/logout", validateAuth, async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
     await authController.logout(userId);
 
@@ -223,6 +230,5 @@ router.post("/logout", validateAuth, async (req, res) => {
     });
   }
 });
-
 
 export default router;
