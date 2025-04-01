@@ -466,4 +466,87 @@ Authorization: Bearer <accessToken>
 
 ---
 
+# 🔑 Google OAuth2 Login - Task Manager Backend
+
+This backend allows users to **login or register with their Google account** using OAuth2 and Passport.js.
+
+---
+
+## 🧠 How it works (Simplified)
+
+1. Frontend redirects to backend: `GET /auth/google`
+2. User logs in with Google
+3. Google redirects back to backend at `/auth/google/callback`
+4. Backend:
+   - Creates account (if new)
+   - Generates `accessToken` and `refreshToken`
+5. User is redirected to frontend with tokens in URL:
+
+```
+http://localhost:3000/dashboard?token.accessToken=...&token.refreshToken=...
+```
+
+---
+
+## 📦 Backend Endpoints
+
+### `GET /auth/google`
+
+- Starts Google Login flow
+
+### `GET /auth/google/callback`
+
+- Handles Google's redirect
+- Sends tokens to frontend in URL
+
+---
+
+## 💻 Frontend Integration (React)
+
+### 🔹 Start Google Login
+
+```tsx
+const handleGoogleLogin = () => {
+  window.location.href = "http://localhost:5000/auth/google";
+};
+```
+
+### 🔹 Handle Redirect with Tokens
+
+```tsx
+useEffect(() => {
+  const url = new URL(window.location.href);
+  const accessToken = url.searchParams.get("token.accessToken");
+  const refreshToken = url.searchParams.get("token.refreshToken");
+
+  if (accessToken) {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    // fetch user or redirect to main app
+  }
+}, []);
+```
+
+---
+
+## ✅ Things to Know
+
+- No email verification needed for Google users
+- You get tokens directly in the redirect URL
+- Use `accessToken` to call protected routes in backend
+- User data is saved in MongoDB like this:
+
+```json
+{
+  "email": "user@gmail.com",
+  "name": "User Name",
+  "verify": true,
+  "avatarURL": "https://..."
+}
+```
+
+---
+
+That’s it — easy Google login for your app! 🚀
+
 Developed with ❤️ using Node.js, Express, MongoDB.
