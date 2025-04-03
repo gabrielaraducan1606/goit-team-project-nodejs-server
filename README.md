@@ -51,54 +51,12 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
 
 ## ▶️ Start Server
 
-### 🔹 In development (with Nodemon):
-
 ```bash
-npm run dev
-```
-
-### 🔹 In production:
-
-```bash
-npm start
+npm run dev       # Development
+npm start         # Production
 ```
 
 The server will start at: `http://localhost:5000`
-
----
-
-## 📂 Project Structure
-
-```bash
-GOIT-TASK-MANAGER-BACKEND/
-├── public/
-│   ├── images/
-│   ├── icons/
-│   └── avatars/
-├── src/
-│   ├── db/
-│   ├── lib/
-│   │   ├── assets/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   └── schema/
-│   ├── middlewares/
-│   ├── routes/
-│   ├── app.js
-│   └── cors.js
-├── server.js
-├── .env.local
-├── package.json
-└── README.md
-```
-
----
-
-## 📌 API Routes
-
-### ✅ `GET /` — Server Check
-
-- **Response:** `{ message: "The Express server is running perfectly!" }`
 
 ---
 
@@ -106,9 +64,9 @@ GOIT-TASK-MANAGER-BACKEND/
 
 ### `POST /auth/register`
 
-Registers a new user.
+Register a new user.
 
-- **Request body:**
+**Request Body:**
 
 ```json
 {
@@ -118,9 +76,9 @@ Registers a new user.
 }
 ```
 
-- **Response:**
+**Response:**
 
-`````json
+```json
 {
   "status": "success",
   "code": 201,
@@ -129,69 +87,72 @@ Registers a new user.
     "user": {
       "name": "Test User",
       "email": "test@example.com",
-      "password": "user_password_encryption",
-      "token": null,
       "verify": false,
-      "verificationToken": "verificationToken",
-      "_id": "user id",
-      "createdAt": "time_stamp",
-      "updatedAt": "time_stamp"
-      }
+      "_id": "user_id"
     }
+  }
 }
+```
 
-```json
-
-- **Generates email verification:**
-
-Hello from TasksProApp!
-Click the link below to verify your account: <Verify_Email_ link_verification>
-Or copy and paste this URL into your browser:<URL_ verification>
-- **Email Verification Response:**
-````json
-{
-  "status": "success",
-  "code": 201,
-  "message": "Registration successful. Please check your email to verify your account.",
-  "data": {
-    "user": {
-      "name": "Test User",
-      "email": "test@example.com",
-      "password": "user_password_encryption",
-      "token": null,
-      "verify": true,
-      "verificationToken": null,
-      "_id": "user id",
-      "createdAt": "time_stamp",
-      "updatedAt": "time_stamp"
-      }
-    }
-}
-
-```json
+➡️ Email with verification link is sent to the user.
 
 ---
 
+### `GET /auth/verify/:verificationToken`
+
+Verifies the email using the token from email.
+
+**Response:**
+
+```json
+{
+  "message": "Verification successful"
+}
+```
+
+---
+
+### `POST /auth/verify`
+
+Resend email verification.
+
+**Request Body:**
+
+```json
+{
+  "email": "test@example.com"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Verification email sent"
+}
+```
+
+---
 
 ### `POST /auth/login`
 
-Login and return access and refresh tokens.
+Login and get access/refresh tokens.
 
-- **Request body:**
+**Request Body:**
 
 ```json
 {
   "email": "test@example.com",
   "password": "testpassword123"
 }
-`````
+```
 
-- **Response:**
+**Response:**
 
 ```json
 {
-  "accessToken": "<JWT_ACCESS_TOKEN>",
-  "refreshToken": "<JWT_REFRESH_TOKEN>",
+  "accessToken": "...",
+  "refreshToken": "...",
   "user": {
     "_id": "...",
     "name": "Test User",
@@ -205,47 +166,50 @@ Login and return access and refresh tokens.
 
 ### `POST /auth/refresh-token`
 
-Generates new access token using a valid refresh token.
+Request a new access token.
 
-- **Request body:**
-
-```json
-{
-  "refreshToken": "<your_refresh_token>"
-}
-```
-
-- **Response:**
+**Request Body:**
 
 ```json
 {
-  "accessToken": "<new_access_token>"
+  "refreshToken": "..."
 }
 ```
 
----
+**Response:**
 
-### `GET /auth/google` & `GET /auth/google/callback`
-
-Used for Google OAuth2 login. On success, redirects to frontend with access token:
-
-```
-http://localhost:3000/dashboard?token=<access_token>
+```json
+{
+  "accessToken": "..."
+}
 ```
 
 ---
 
 ### `PATCH /auth/profile`
 
-Update user profile.
+Update user name or password.
 
-- **Request body:**
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
 
 ```json
 {
   "name": "Updated Name",
-  "password": "newpass",
-  "avatarURL": "http://localhost:5000/avatars/image.jpg"
+  "password": "newpass123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "user": {
+    "name": "Updated Name",
+    "email": "test@example.com",
+    "avatarURL": "/avatars/example.jpg"
+  }
 }
 ```
 
@@ -253,25 +217,67 @@ Update user profile.
 
 ### `POST /auth/avatar`
 
-Upload a user avatar via form-data (field: `avatar`).
+Upload avatar image.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Form-Data:**
+
+- `avatar`: (file)
+
+**Response:**
+
+```json
+{
+  "user": {
+    "avatarURL": "/avatars/filename.jpg"
+  }
+}
+```
 
 ---
 
-## 🧱 Board Routes ( `/boards` )
+### `POST /auth/need-help`
+
+Send a help request via email.
+
+**Request Body:**
+
+```json
+{
+  "email": "test@example.com",
+  "comment": "I'm having trouble accessing my tasks."
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Help request sent successfully"
+}
+```
+
+---
+
+## 🧱 Board Routes (`/boards`)
 
 ### `GET /boards`
 
-Returns all boards created by the user.
+Returns all boards of the user.
 
-- **Response:**
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
 
 ```json
 [
   {
     "_id": "...",
-    "title": "Design Board",
-    "background": "/images/sky.jpg",
-    "icon": "idea",
+    "title": "Project",
+    "background": "/images/blue.jpg",
+    "icon": "/icons/rocket.png",
     "owner": "user_id"
   }
 ]
@@ -279,84 +285,69 @@ Returns all boards created by the user.
 
 ---
 
-### `POST /auth/logout`
-
-- **Response:**
-
-```json
-{
-  "status": "success",
-  "message": "Help request sent successfully",
-  "data": {
-    "message": "Successfull help request sent by test@example.com"
-  }
-}
-```
-
----
-
----
-
-### `POST /auth/need-help`
-
-- **Request body:**
-
-```json
-{
-  "status": "success",
-  "message": "Logged out successfully"
-}
-```
-
-- **Response:**
-
-```json
-{
-  "status": "success",
-  "message": "Help request sent successfully",
-  "data": {
-    "message": "Successfull help request sent by test@example.com"
-  }
-}
-```
-
----
-
 ### `POST /boards`
 
-Creates a new board.
+Create a new board.
 
-- **Request body:**
+**Request Body:**
 
 ```json
 {
   "title": "Development",
-  "background": "/images/blue.jpg",
-  "icon": "code"
+  "background": "http://localhost:5000/images/blue.jpg",
+  "icon": "http://localhost:5000/icons/rocket.png"
 }
 ```
 
-### `PATCH /boards/:id`
+**Response:**
 
-Updates board title, background, or icon.
-
-### `DELETE /boards/:id`
-
-Deletes the specified board.
+```json
+{
+  "_id": "...",
+  "title": "Development",
+  "background": "/images/blue.jpg",
+  "icon": "/icons/rocket.png",
+  "owner": "user_id"
+}
+```
 
 ---
 
-## 📦 Column Routes ( `/columns` )
+### `PATCH /boards/:id`
+
+Update board.
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated Board",
+  "background": "http://localhost:5000/images/sky.jpg",
+  "icon": "http://localhost:5000/icons/star.png"
+}
+```
+
+---
+
+### `DELETE /boards/:id`
+
+Delete board.
+
+---
+
+## 📦 Column Routes (`/columns`)
 
 ### `GET /columns/:boardId`
 
-Returns all columns for a specific board.
+Get all columns for a board.
+
+---
 
 ### `POST /columns`
 
-Create a column.
+Create a new column.
 
-- **Request body:**
+**Request Body:**
 
 ```json
 {
@@ -365,23 +356,57 @@ Create a column.
 }
 ```
 
-### `DELETE /columns/:id`
+---
 
-Deletes the column and its associated cards.
+### `PATCH /columns/:id`
+
+Update a column's title or order.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+
+```json
+{
+  "title": "In Progress",
+  "order": 2
+}
+```
+
+**Response:**
+
+```json
+{
+  "_id": "...",
+  "title": "In Progress",
+  "order": 2,
+  "boardId": "...",
+  "createdAt": "...",
+  "updatedAt": "..."
+}
+```
 
 ---
 
-## 📂 Card Routes ( `/cards` )
+### `DELETE /columns/:id`
+
+Delete a column and all its cards.
+
+---
+
+## 📂 Card Routes (`/cards`)
 
 ### `GET /cards/:columnId`
 
-Get all cards in a specific column.
+Get cards from a column. Supports `priority=low|medium|high|none`.
+
+---
 
 ### `POST /cards`
 
-Create a new card.
+Create a card.
 
-- **Request body:**
+**Request Body:**
 
 ```json
 {
@@ -393,63 +418,135 @@ Create a new card.
 }
 ```
 
+---
+
 ### `PATCH /cards/:id`
 
-Update a card — including changing its column (card migration).
+Update a card (can also move between columns).
 
-- **Request body:**
-
-```json
-{
-  "columnId": "<new_column_id>",
-  "priority": "medium"
-}
-```
-
-> ✅ Use this to **migrate a card** from one column (e.g. To Do) to another (e.g. In Progress).
+---
 
 ### `DELETE /cards/:id`
 
-Deletes the selected card.
+Delete a card.
 
 ---
 
-## 🎨 Assets Routes ( `/assets` )
+## 🎨 Assets (`/assets`)
 
 ### `GET /assets/backgrounds`
 
-Returns URLs to background images.
+Returns image URLs for board backgrounds.
+
+---
 
 ### `GET /assets/icons`
 
-Returns available icon URLs.
+Returns icon image URLs for boards.
 
 ---
 
-## 📥 Static File Access
+## 🖼 Static File Access
 
-- Backgrounds: `http://localhost:5000/images/<filename>`
-- Icons: `http://localhost:5000/icons/<filename>`
-- Avatars: `http://localhost:5000/avatars/<filename>`
+Access public files like this:
+
+- `http://localhost:5000/images/<filename>`
+- `http://localhost:5000/icons/<filename>`
+- `http://localhost:5000/avatars/<filename>`
 
 ---
 
-## ✅ Auth Middleware
+## ✅ Authorization Header
 
-Use access token in header:
+Send this header with all protected requests:
 
-```http
-Authorization: Bearer <access_token>
+```
+Authorization: Bearer <accessToken>
 ```
 
 ---
 
-## 🪖 Validation Middleware
+# 🔑 Google OAuth2 Login - Task Manager Backend
 
-Each request is validated using Joi schema via `validateBody()` middleware.
+This backend allows users to **login or register with their Google account** using OAuth2 and Passport.js.
 
 ---
 
-> The backend gives you the foundation, you bring the app to life. Let’s build something cool! 💻✨
+## 🧠 How it works (Simplified)
+
+1. Frontend redirects to backend: `GET /auth/google`
+2. User logs in with Google
+3. Google redirects back to backend at `/auth/google/callback`
+4. Backend:
+   - Creates account (if new)
+   - Generates `accessToken` and `refreshToken`
+5. User is redirected to frontend with tokens in URL:
+
+```
+http://localhost:3000/dashboard?token.accessToken=...&token.refreshToken=...
+```
+
+---
+
+## 📦 Backend Endpoints
+
+### `GET /auth/google`
+
+- Starts Google Login flow
+
+### `GET /auth/google/callback`
+
+- Handles Google's redirect
+- Sends tokens to frontend in URL
+
+---
+
+## 💻 Frontend Integration (React)
+
+### 🔹 Start Google Login
+
+```tsx
+const handleGoogleLogin = () => {
+  window.location.href = "http://localhost:5000/auth/google";
+};
+```
+
+### 🔹 Handle Redirect with Tokens
+
+```tsx
+useEffect(() => {
+  const url = new URL(window.location.href);
+  const accessToken = url.searchParams.get("token.accessToken");
+  const refreshToken = url.searchParams.get("token.refreshToken");
+
+  if (accessToken) {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    // fetch user or redirect to main app
+  }
+}, []);
+```
+
+---
+
+## ✅ Things to Know
+
+- No email verification needed for Google users
+- You get tokens directly in the redirect URL
+- Use `accessToken` to call protected routes in backend
+- User data is saved in MongoDB like this:
+
+```json
+{
+  "email": "user@gmail.com",
+  "name": "User Name",
+  "verify": true,
+  "avatarURL": "https://..."
+}
+```
+
+---
+
+That’s it — easy Google login for your app! 🚀
 
 Developed with ❤️ using Node.js, Express, MongoDB.

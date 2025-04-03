@@ -165,7 +165,10 @@ router.post("/refresh-token", async (req, res) => {
  *       302:
  *         description: Redirecționare către Google
  */
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
 /**
  * @swagger
@@ -177,7 +180,8 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
  *       302:
  *         description: Redirecționare către aplicație cu token
  */
-router.get("/google/callback",
+router.get(
+  "/google/callback",
   passport.authenticate("google", { session: false }),
   async (req, res) => {
     const jwt = await authController.generateGoogleToken(req.user);
@@ -209,7 +213,9 @@ router.get("/verify/:verificationToken", async (req, res) => {
   try {
     const user = await authController.getUserByValidationToken(token);
     if (!user) {
-      return res.status(404).json({ message: "User not found or token expired" });
+      return res
+        .status(404)
+        .json({ message: "User not found or token expired" });
     }
     if (user.verify) {
       return res.status(400).json({ message: "User is already verified" });
@@ -306,22 +312,28 @@ router.post("/verify", async (req, res) => {
  *       500:
  *         description: Eroare la trimitere
  */
-router.post("/need-help", validateBody(schemas.needHelpSchema), async (req, res) => {
-  const { email, comment } = req.body;
-  try {
-    const result = await authController.needHelp(email, comment);
-    res.status(200).json({
-      status: "success",
-      message: "Help request sent successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Internal server error",
-    });
+router.post(
+  "/need-help",
+  validateBody(schemas.needHelpSchema),
+  async (req, res) => {
+    const { email, comment } = req.body;
+
+    try {
+      const result = await authController.needHelp(email, comment);
+      res.status(200).json({
+        status: "success",
+        message: "Help request sent successfully",
+        data: result,
+      });
+    } catch (error) {
+      console.error("Error in need-help route:", error);
+      res.status(500).json({
+        status: "error",
+        message: error.message || "Internal server error",
+      });
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -351,3 +363,4 @@ router.post("/logout", validateAuth, async (req, res) => {
 });
 
 export default router;
+

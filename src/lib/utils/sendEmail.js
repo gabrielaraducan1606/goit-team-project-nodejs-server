@@ -15,13 +15,13 @@ function configureSendGrid() {
 export async function sendVerificationEmail(to, token) {
   try {
     configureSendGrid();
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'anca.sab@outlook.com';
-    const verificationLink = `http://localhost:5001/auth/verify/${token}`;
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL || "anca.sab@outlook.com";
+    const verificationLink = `http://localhost:5000/auth/verify/${token}`;
 
     const msg = {
       to: to,
       from: fromEmail,
-      subject: 'Verify your email',
+      subject: "Verify your email",
       text: `Click the link to verify your email: ${verificationLink}`,
       html: `
           <p>Hello from <strong>TasksProApp</strong>!</p>
@@ -47,7 +47,7 @@ export async function sendVerificationEmail(to, token) {
 
 export async function sendNeedHelpEmail(to, from, subject, text, html) {
   const sendGridApiKey = process.env.SENDGRID_API_KEY;
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'your-email@example.com';
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL || "your-email@example.com";
 
   if (!sendGridApiKey) {
     console.error("SENDGRID_API_KEY is missing in environment variables!");
@@ -60,8 +60,8 @@ export async function sendNeedHelpEmail(to, from, subject, text, html) {
     to: to, // (taskpro.project@gmail.com)
     from: fromEmail, //  (user email)
     subject: subject,
-    text: text, 
-    html: html, 
+    text: text,
+    html: html,
   };
 
   try {
@@ -75,7 +75,7 @@ export async function sendNeedHelpEmail(to, from, subject, text, html) {
       throw new Error("Unexpected response from SendGrid");
     }
   } catch (error) {
-    console.error("Error sending \"Need Help\" email:", error);
-    throw new Error("Error sending \"Need Help\" email");
+    console.error('Error sending "Need Help" email:', error);
+    throw new Error('Error sending "Need Help" email');
   }
 }
