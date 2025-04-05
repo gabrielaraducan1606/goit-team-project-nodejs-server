@@ -41,31 +41,36 @@ const router = express.Router();
  *       500:
  *         description: Eroare internă
  */
-router.post("/register", validateBody(schemas.registerSchema), async (req, res) => {
-  try {
-    const newUser = await authController.signup(req.body);
-    res.status(201).json({
-      status: "success",
-      code: 201,
-      message: "Registration successful. Please check your email to verify your account.",
-      data: { user: newUser },
-    });
-  } catch (error) {
-    if (error.message === "Email already in use") {
-      res.status(409).json({
-        status: "error",
-        code: 409,
-        message: "Email already in use",
+router.post(
+  "/register",
+  validateBody(schemas.registerSchema),
+  async (req, res) => {
+    try {
+      const newUser = await authController.signup(req.body);
+      res.status(201).json({
+        status: "success",
+        code: 201,
+        message:
+          "Registration successful. Please check your email to verify your account.",
+        data: { user: newUser },
       });
-    } else {
-      res.status(500).json({
-        status: "error",
-        code: 500,
-        message: error.message,
-      });
+    } catch (error) {
+      if (error.message === "Email already in use") {
+        res.status(409).json({
+          status: "error",
+          code: 409,
+          message: "Email already in use",
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          code: 500,
+          message: error.message,
+        });
+      }
     }
   }
-});
+);
 
 /**
  * @swagger
@@ -95,11 +100,11 @@ router.post("/register", validateBody(schemas.registerSchema), async (req, res) 
  */
 router.post("/login", validateBody(schemas.loginSchema), async (req, res) => {
   try {
-    const token = await authController.login(req.body);
+    const data = await authController.login(req.body);
     res.status(200).json({
       status: "success",
       code: 200,
-      data: { token },
+      data,
     });
   } catch (error) {
     res.status(401).json({
@@ -140,7 +145,9 @@ router.post("/refresh-token", async (req, res) => {
     if (!refreshToken) {
       return res.status(400).json({ message: "Missing refresh token" });
     }
-    const newAccessToken = await authController.refreshAccessToken(refreshToken);
+    const newAccessToken = await authController.refreshAccessToken(
+      refreshToken
+    );
     res.status(200).json({
       status: "success",
       code: 200,
@@ -353,7 +360,9 @@ router.post("/logout", validateAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     await authController.logout(userId);
-    return res.status(200).json({ status: "success", message: "Logged out successfully" });
+    return res
+      .status(200)
+      .json({ status: "success", message: "Logged out successfully" });
   } catch (error) {
     return res.status(500).json({
       status: "error",
@@ -363,4 +372,3 @@ router.post("/logout", validateAuth, async (req, res) => {
 });
 
 export default router;
-
