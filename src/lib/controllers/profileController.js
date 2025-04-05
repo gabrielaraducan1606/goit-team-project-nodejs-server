@@ -43,3 +43,64 @@ export async function uploadAvatar(req, res) {
     });
   }
 }
+
+
+export async function getAvatar(req, res) {
+  try {
+    const { filename } = req.params;
+    const imagePath = path.join(process.cwd(), "public", "avatars", filename);
+
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({
+        status: "error",
+        code: 404,
+        message: "Image not found",
+      });
+    }
+
+    const ext = path.extname(filename).toLowerCase();
+    let contentType = "image/jpeg";
+    if (ext === ".png") contentType = "image/png";
+    else if (ext === ".gif") contentType = "image/gif";
+    else if (ext === ".webp") contentType = "image/webp";
+
+    res.set("Content-Type", contentType);
+    fs.createReadStream(imagePath).pipe(res);
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      code: 500,
+      message: error.message,
+    });
+  }
+}
+
+export async function getImage(req, res) {
+  try {
+    const { filename } = req.params;
+    const imagePath = path.join(process.cwd(), "public", "images", filename);
+
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({
+        status: "error",
+        code: 404,
+        message: "Image not found",
+      });
+    }
+
+    const ext = path.extname(filename).toLowerCase();
+    let contentType = "image/jpeg";
+    if (ext === ".png") contentType = "image/png";
+    else if (ext === ".gif") contentType = "image/gif";
+    else if (ext === ".webp") contentType = "image/webp";
+
+    res.set("Content-Type", contentType);
+    fs.createReadStream(imagePath).pipe(res);
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      code: 500,
+      message: error.message,
+    });
+  }
+}
