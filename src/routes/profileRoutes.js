@@ -148,7 +148,7 @@ router.patch("/profile", validateAuth, async (req, res) => {
 });
 
 router.post("/avatar", validateAuth, upload.single("avatar"), uploadAvatar);
-router.get("/avatar/:filename", validateAuth, getAvatar);
-router.get("/image/:filename", validateAuth, getImage);
+router.get("/avatars/:filename", validateAuth, getAvatar);
+router.get("/image/:filename", getImage);
 
 export default router;

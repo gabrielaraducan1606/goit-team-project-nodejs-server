@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
+import path from "path";
+import fs from 'fs'
 
 export async function updateProfile(userId, updates) {
   const allowedFields = ["name", "avatarURL", "password"];
