@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
+  getAvatar,
+  getImage,
   updateProfile,
   uploadAvatar,
 } from "../lib/controllers/profileController.js";
@@ -128,8 +130,6 @@ const upload = multer({ storage });
  *         description: Eroare la încărcare
  */
 
-
-
 router.patch("/profile", validateAuth, async (req, res) => {
   try {
     const user = await updateProfile(req.user._id, req.body);
@@ -148,5 +148,7 @@ router.patch("/profile", validateAuth, async (req, res) => {
 });
 
 router.post("/avatar", validateAuth, upload.single("avatar"), uploadAvatar);
+router.get("/avatar/:filename", validateAuth, getAvatar);
+router.get("/image/:filename", validateAuth, getImage);
 
 export default router;
