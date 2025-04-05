@@ -69,7 +69,7 @@ export async function login(data) {
   if (!isMatching) throw new Error("Email or password is incorrect");
 
   const accessToken = jwt.sign({ id: user._id }, secretForToken, {
-    expiresIn: "1h",
+    expiresIn: "1d",
   });
 
   const refreshToken = jwt.sign({ id: user._id }, refreshTokenSecret, {
